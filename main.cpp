@@ -1,5 +1,6 @@
 #include <iostream>
-
+#include "color.h"
+#include "vec3.h"
 
 int main(){
 
@@ -13,11 +14,8 @@ int main(){
             auto g = static_cast<double>(i) / (i_height -1);
             auto b = 0; 
 
-            int ir = static_cast<int>(255 * r);
-            int ig = static_cast<int>(255 * g);
-            int ib = static_cast<int>(255 * b);
+            write_color(std::cout,color(r,g,b));
 
-            std::cout << ir << " " << ig << " " << ib << std::endl;
         }
     } 
 

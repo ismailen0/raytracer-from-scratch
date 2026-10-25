@@ -4,14 +4,29 @@
 #include "vec3.h"
 
 
+bool hit_sphere(const point3& center, double radius, const ray& r){
+    // These are math calculations that we have found while solving the equations for spheres = r^2 on
+    vec3 oc = center - r.origin();
+    auto a = dot(r.direction(), r.direction());
+    auto b = -2.0 * dot(r.direction(), oc);
+    auto c = dot(oc, oc) - radius*radius;
+    auto discriminant = b*b - 4*a*c;
+    return (discriminant >= 0);
+
+}
+
 color ray_color(const ray& ray){
+    if (hit_sphere(point3(0,0,-1), 0.5, ray))
+        return color(1, 0, 0);
     auto ray_unit = unit_vector(ray.direction());
-    
     // our value is now between -1 and +1 so we need to add +1 and divide by 2
+    // math term: Min-max normalization
+    // ne need to get its y component (|u|sintheta but no need to use since we already have its y)
     auto a = 0.5*(ray_unit.y()+1.0);
     // now If our a is 1 = white will not be accounted because of
     // 1.0-1
     // but If we have a is 0 now blue is not be accounted. 
+    // math term: lerp
     return (1.0-a)*color(1.0,1.0,1.0) + a*color(0.5,0.7,1.0);
 }
 
@@ -22,11 +37,11 @@ int main(){
     // Since width and height should be integer we cannot get the real exact value of aspect ratiot
     // this is too imporant while we are dealing with viewport we'll use width/height
     int i_height = static_cast<int>(i_width / aspect_ratio);
+    i_height = (i_height < 1) ? 1 : i_height;
 
     auto viewport_height = 2.0;
     auto viewport_width = viewport_height * (static_cast<double>(i_width)/i_height);
-    i_height = (i_height < 1) ? 1 : i_height;
-
+    
     auto focal_lenght = 1.0;
     auto camera_center = point3(0,0,0);
 

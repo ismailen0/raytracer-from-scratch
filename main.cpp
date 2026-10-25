@@ -5,7 +5,14 @@
 
 
 color ray_color(const ray& ray){
-    return color(0,0,0);
+    auto ray_unit = unit_vector(ray.direction());
+    
+    // our value is now between -1 and +1 so we need to add +1 and divide by 2
+    auto a = 0.5*(ray_unit.y()+1.0);
+    // now If our a is 1 = white will not be accounted because of
+    // 1.0-1
+    // but If we have a is 0 now blue is not be accounted. 
+    return (1.0-a)*color(1.0,1.0,1.0) + a*color(0.5,0.7,1.0);
 }
 
 
@@ -14,10 +21,11 @@ int main(){
     const int i_width = 400;
     // Since width and height should be integer we cannot get the real exact value of aspect ratiot
     // this is too imporant while we are dealing with viewport we'll use width/height
-    const int i_height = static_cast<int>(i_width / aspect_ratio);
+    int i_height = static_cast<int>(i_width / aspect_ratio);
 
     auto viewport_height = 2.0;
     auto viewport_width = viewport_height * (static_cast<double>(i_width)/i_height);
+    i_height = (i_height < 1) ? 1 : i_height;
 
     auto focal_lenght = 1.0;
     auto camera_center = point3(0,0,0);
@@ -42,10 +50,11 @@ int main(){
     std::cout << "P3" << std::endl << i_width << " " << i_height << std::endl << 255 << std::endl;
     for(int j = 0; j < i_height; j++){
         for(int i = 0; i < i_width; i++){
-            auto r = static_cast<double>(i) / (i_width -1);
-            auto g = static_cast<double>(j) / (i_height-1);
-            auto b = 0; 
-            write_color(std::cout,color(r,g,b));
+            auto pixel_center = pixel00_loc + (j*pixel_delta_v) + (i*pixel_delta_u);
+            auto ray_direction = pixel_center-camera_center;
+            ray r(camera_center,ray_direction);
+            color pixel_color = ray_color(r);
+            write_color(std::cout,pixel_color);
         }
     } 
 

@@ -2,22 +2,30 @@
 #include "ray.h"
 #include "color.h"
 #include "vec3.h"
+#include <cmath>
 
-
-bool hit_sphere(const point3& center, double radius, const ray& r){
+double hit_sphere(const point3& center, double radius, const ray& r){
     // These are math calculations that we have found while solving the equations for spheres = r^2 on
     vec3 oc = center - r.origin();
-    auto a = dot(r.direction(), r.direction());
-    auto b = -2.0 * dot(r.direction(), oc);
-    auto c = dot(oc, oc) - radius*radius;
-    auto discriminant = b*b - 4*a*c;
-    return (discriminant >= 0);
+    auto a = r.direction().length_squared();
+    auto h = dot(r.direction(), oc);;
+    auto c = oc.length_squared() - radius*radius;
+    auto discriminant = h*h -a*c;
+    // if discrament is lower then zero then cannot be any solution for that equation; 
+    if(discriminant < 0 ){
+        return -1;
+    }else{
+        return (h - std::sqrt(discriminant))/(a);
+    } 
 
 }
 
 color ray_color(const ray& ray){
-    if (hit_sphere(point3(0,0,-1), 0.5, ray))
-        return color(1, 0, 0);
+    auto t = hit_sphere(point3(0,0,-1),0.5,ray);
+    if(t>0){
+        vec3 N = unit_vector(ray.at(t)-point3(0,0,-1));
+        return 0.5*color(N.x()+1,N.y()+1,N.z()+1);
+    }
     auto ray_unit = unit_vector(ray.direction());
     // our value is now between -1 and +1 so we need to add +1 and divide by 2
     // math term: Min-max normalization

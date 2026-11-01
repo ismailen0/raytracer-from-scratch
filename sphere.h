@@ -1,7 +1,7 @@
-#ifndef HITTABLEH  
-#define HITTABLEH
+#ifndef SPHEREH  
+#define SPHEREH
 #include "hittable.h"
-
+#include <cmath>
 class sphere : public hittable {
 private:
     point3 center;
@@ -9,10 +9,11 @@ private:
 
 public:
         sphere(const point3& center, double radius) : center(center), radius(std::fmax(0,radius)) {}
-        std::optional<hit_record> hit(const ray& r, double ray_tmin, double ray_tmax, hit_record& rec) const override {
+        std::optional<hit_record> hit(const ray& r, double ray_tmin, double ray_tmax) const override {
+                if(radius <= 0) return std::nullopt;
                 vec3 oc = center - r.origin();
                 auto a = r.direction().length_squared();
-                auto h = dot(r.direction(), oc);;
+                auto h = dot(r.direction(), oc);
                 auto c = oc.length_squared() - radius*radius;
                 auto discriminant = h*h -a*c;
                 if (discriminant < 0) return std::nullopt;        
@@ -20,8 +21,8 @@ public:
                 auto t1 = (h - sqrtd) / a;
                 auto t2 = (h + sqrtd) / a;
                
-                bool isT1Valid=(t1>=ray_tmin && t1 <= ray_tmax);
-                bool isT2Valid = (t2>=ray_tmin && t2 <= ray_tmax);
+                bool isT1Valid=(t1>ray_tmin && t1 < ray_tmax);
+                bool isT2Valid = (t2>ray_tmin && t2 < ray_tmax);
 
                 if(!isT1Valid && !isT2Valid) return std::nullopt;
 

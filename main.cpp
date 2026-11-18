@@ -1,45 +1,26 @@
-#include <iostream>
-#include "ray.h"
-#include "color.h"
-#include "vec3.h"
-#include <cmath>
+#include "hittable.h"
+#include "hittable_list.h"
+#include "sphere.h"
+#include "common.h"
 
-double hit_sphere(const point3& center, double radius, const ray& r){
-    // These are math calculations that we have found while solving the equations for spheres = r^2 on
-    vec3 oc = center - r.origin();
-    auto a = r.direction().length_squared();
-    auto h = dot(r.direction(), oc);;
-    auto c = oc.length_squared() - radius*radius;
-    auto discriminant = h*h -a*c;
-    // if discrament is lower then zero then cannot be any solution for that equation; 
-    if(discriminant < 0 ){
-        return -1;
-    }else{
-        return (h - std::sqrt(discriminant))/(a);
-    } 
-
-}
-
-color ray_color(const ray& ray){
-    auto t = hit_sphere(point3(0,0,-1),0.5,ray);
-    if(t>0){
-        vec3 N = unit_vector(ray.at(t)-point3(0,0,-1));
-        return 0.5*color(N.x()+1,N.y()+1,N.z()+1);
+color ray_color(const ray& r, const hittable& world) {
+    if (auto rec = world.hit(r, 0, infinity)) {
+        return 0.5 * (rec->normal + color(1,1,1));
     }
-    auto ray_unit = unit_vector(ray.direction());
-    // our value is now between -1 and +1 so we need to add +1 and divide by 2
-    // math term: Min-max normalization
-    // ne need to get its y component (|u|sintheta but no need to use since we already have its y)
-    auto a = 0.5*(ray_unit.y()+1.0);
-    // now If our a is 1 = white will not be accounted because of
-    // 1.0-1
-    // but If we have a is 0 now blue is not be accounted. 
-    // math term: lerp
-    return (1.0-a)*color(1.0,1.0,1.0) + a*color(0.5,0.7,1.0);
+
+    vec3 unit_direction = unit_vector(r.direction());
+    auto a = 0.5*(unit_direction.y() + 1.0);
+    return (1.0-a)*color(1.0, 1.0, 1.0) + a*color(0.5, 0.7, 1.0);
 }
+
 
 
 int main(){
+
+    hittable_list world;
+    world.add(make_shared<sphere>(point3(0,0,-1), 0.5));
+    world.add(make_shared<sphere>(point3(0,-100.5,-1), 100));
+
     double aspect_ratio = 16.0 / 9.0;
     const int i_width = 400;
     // Since width and height should be integer we cannot get the real exact value of aspect ratiot
@@ -76,7 +57,7 @@ int main(){
             auto pixel_center = pixel00_loc + (j*pixel_delta_v) + (i*pixel_delta_u);
             auto ray_direction = pixel_center-camera_center;
             ray r(camera_center,ray_direction);
-            color pixel_color = ray_color(r);
+            color pixel_color = ray_color(r, world);
             write_color(std::cout,pixel_color);
         }
     } 

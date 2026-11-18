@@ -2,7 +2,7 @@
 #define HITTABLEH
 
 #include <optional>
-#include "ray.h"
+#include "common.h"
 struct hit_record{
         point3 p;
         vec3 normal;
@@ -17,7 +17,7 @@ struct hit_record{
 class hittable {
     public:
         virtual ~hittable() = default;
-        virtual std::optional<hit_record>  hit(const ray& r, double ray_tmin, double ray_tmax) const = 0;
+        virtual std::optional<hit_record>  hit(const ray& r, interval ray_t) const = 0;
 };
 
 

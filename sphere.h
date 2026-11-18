@@ -10,7 +10,7 @@ private:
 
 public:
         sphere(const point3& center, double radius) : center(center), radius(std::fmax(0,radius)) {}
-        std::optional<hit_record> hit(const ray& r, double ray_tmin, double ray_tmax) const override {
+        std::optional<hit_record> hit(const ray& r, interval ray_t) const override {
                 if(radius <= 0) return std::nullopt;
                 vec3 oc = center - r.origin();
                 auto a = r.direction().length_squared();
@@ -22,8 +22,8 @@ public:
                 auto t1 = (h - sqrtd) / a;
                 auto t2 = (h + sqrtd) / a;
                
-                bool isT1Valid=(t1>ray_tmin && t1 < ray_tmax);
-                bool isT2Valid = (t2>ray_tmin && t2 < ray_tmax);
+                bool isT1Valid = ray_t.surrounds(t1);
+                bool isT2Valid = ray_t.surrounds(t2);
 
                 if(!isT1Valid && !isT2Valid) return std::nullopt;
 
